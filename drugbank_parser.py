@@ -25,23 +25,23 @@ if not os.path.isfile('fda.csv'):
                            f'{ns}property[{ns}kind="logP"]/{ns}value'))
             for drug in tree.getroot()]
 
-    approved_drugs = (pd.DataFrame(rows, columns=['drugbank_id', 'name',
+    illicit_drugs = (pd.DataFrame(rows, columns=['drugbank_id', 'name',
                                                   'groups', 'atc_codes',
                                                   'smiles', 'logP'])
                      .dropna(subset=['smiles']))
     # Filter on FDA approved drugs.
-    approved_drugs = approved_drugs[approved_drugs['groups']
-                                    .str.contains('approved')]
+    approved_drugs = illicit_drugs[illicit_drugs['groups']
+                                    .str.contains('illicit')]
     # Only retain drugs with valid and unique SMILES.
     smiles = []
-    for drug_smiles in approved_drugs['smiles']:
+    for drug_smiles in illicit_drugs['smiles']:
         mol = Chem.MolFromSmiles(drug_smiles)
         smiles.append(Chem.MolToSmiles(mol, False)
                       if mol is not None else None)
-    approved_drugs['smiles'] = smiles
-    approved_drugs = (approved_drugs.dropna(subset=['smiles'])
+    illicit_drugs['smiles'] = smiles
+    illicit_drugs = (illicit_drugs.dropna(subset=['smiles'])
                       .drop_duplicates('smiles')
                       .reset_index(drop=True))
-    approved_drugs.to_csv('fda.csv', index=False)
+    illicit_drugs.to_csv('fda.csv', index=False)
 else:
-    approved_drugs = pd.read_csv('fda.csv')
+    illicit_drugs = pd.read_csv('fda.csv')
