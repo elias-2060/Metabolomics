@@ -9,7 +9,7 @@ warnings.filterwarnings('ignore', category=RuntimeWarning)
 warnings.filterwarnings('ignore', category=UserWarning)
 RDLogger.DisableLog('rdApp.*')
 
-if not os.path.isfile('fda.csv'):
+if not os.path.isfile('illicit_drugs.csv'):
     # Parse DrugBank XML file.
     ns = '{http://www.drugbank.ca}'
     tree = ET.parse('drugbank_database.xml')
@@ -30,7 +30,7 @@ if not os.path.isfile('fda.csv'):
                                                   'smiles', 'logP'])
                      .dropna(subset=['smiles']))
     # Filter on FDA approved drugs.
-    approved_drugs = illicit_drugs[illicit_drugs['groups']
+    illicit_drugs = illicit_drugs[illicit_drugs['groups']
                                     .str.contains('illicit')]
     # Only retain drugs with valid and unique SMILES.
     smiles = []
@@ -42,6 +42,6 @@ if not os.path.isfile('fda.csv'):
     illicit_drugs = (illicit_drugs.dropna(subset=['smiles'])
                       .drop_duplicates('smiles')
                       .reset_index(drop=True))
-    illicit_drugs.to_csv('fda.csv', index=False)
+    illicit_drugs.to_csv('illicit_drugs.csv', index=False)
 else:
-    illicit_drugs = pd.read_csv('fda.csv')
+    illicit_drugs = pd.read_csv('illicit_drugs.csv')
