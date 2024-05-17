@@ -9,7 +9,7 @@ warnings.filterwarnings('ignore', category=RuntimeWarning)
 warnings.filterwarnings('ignore', category=UserWarning)
 RDLogger.DisableLog('rdApp.*')
 
-if not os.path.isfile('illicit_drugs.csv'):
+if not os.path.isfile('all_drugs.csv'):
     # Parse DrugBank XML file.
     ns = '{http://www.drugbank.ca}'
     tree = ET.parse('drugbank_database.xml')
@@ -22,16 +22,16 @@ if not os.path.isfile('illicit_drugs.csv'):
              drug.findtext(f'{ns}calculated-properties/'
                            f'{ns}property[{ns}kind="SMILES"]/{ns}value'),
              drug.findtext(f'{ns}experimental-properties/'
-                           f'{ns}property[{ns}kind="logP"]/{ns}value'))
+                           f'{ns}property[{ns}kind="logP"]/{ns}value'),
+             drug.findtext(f'{ns}calculated-properties/'
+                           f'{ns}property[{ns}kind="InChIKey"]/{ns}value'))
             for drug in tree.getroot()]
 
     illicit_drugs = (pd.DataFrame(rows, columns=['drugbank_id', 'name',
                                                   'groups', 'atc_codes',
-                                                  'smiles', 'logP'])
+                                                  'smiles', 'logP', 'inchikey'])
                      .dropna(subset=['smiles']))
-    # Filter on FDA approved drugs.
-    illicit_drugs = illicit_drugs[illicit_drugs['groups']
-                                    .str.contains('illicit')]
+
     # Only retain drugs with valid and unique SMILES.
     smiles = []
     for drug_smiles in illicit_drugs['smiles']:
@@ -42,6 +42,6 @@ if not os.path.isfile('illicit_drugs.csv'):
     illicit_drugs = (illicit_drugs.dropna(subset=['smiles'])
                       .drop_duplicates('smiles')
                       .reset_index(drop=True))
-    illicit_drugs.to_csv('illicit_drugs.csv', index=False)
+    illicit_drugs.to_csv('all_drugs.csv', index=False)
 else:
-    illicit_drugs = pd.read_csv('illicit_drugs.csv')
+    illicit_drugs = pd.read_csv('all_drugs.csv')
